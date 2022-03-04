@@ -42,8 +42,11 @@ NIC >= 0 et NP >= 0
 alors
 
 NIC >= 0
+
 NDC + NIC >= NDC
+
 ( NDC + NIC ) / NP >= NDC / NP
+
 LCC >= TCC
 
 So LCC can't be lower than TCC
