@@ -1,5 +1,7 @@
 package fr.istic.vv;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,12 @@ import com.github.javaparser.ast.visitor.VoidVisitorWithDefaults;
 // prints all public enum, classes or interfaces along with their public methods
 public class PrivateElementsGetter extends VoidVisitorWithDefaults<Void> {
 
+    public FileWriter file;
+
+    public PrivateElementsGetter(FileWriter file){
+        this.file = file;
+    }
+
     public List<String> fieldsList = new ArrayList<>();
     @Override
     public void visit(CompilationUnit unit, Void arg) {
@@ -26,7 +34,12 @@ public class PrivateElementsGetter extends VoidVisitorWithDefaults<Void> {
 
     public void visitTypeDeclaration(TypeDeclaration<?> declaration, Void arg) {
         if(!declaration.isPublic()) return;
-       //System.out.println(declaration.getFullyQualifiedName().orElse("[Anonymous]"));
+        try {
+            file.write("Package and Class : " + declaration.getFullyQualifiedName().orElse("[Anonymous]") + '\n');
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         for(FieldDeclaration field : declaration.getFields()){
             field.accept(this, arg);
         }
@@ -38,9 +51,6 @@ public class PrivateElementsGetter extends VoidVisitorWithDefaults<Void> {
         for(BodyDeclaration<?> member : declaration.getMembers()) {
             if (member instanceof TypeDeclaration)
                 member.accept(this, arg);
-        }
-        for (String field : fieldsList) {
-            System.out.println(field);
         }
     }
     
@@ -56,15 +66,28 @@ public class PrivateElementsGetter extends VoidVisitorWithDefaults<Void> {
     }
 
     @Override
-    public void visit(MethodDeclaration declaration, Void arg) {
-        if(!declaration.isPrivate() ) return;
-        String methodName = declaration.getNameAsString();
-        if(methodName.substring(0, 2).equals("get")){
-            if(fieldsList.contains(methodName.substring(3))){
-                fieldsList.remove(methodName.substring(3));
+    public void visit(MethodDeclaration declaration, Void arg) {  
+        if(methodIsGetter(declaration.getNameAsString())){
+            try {
+                file.write("Getter : " + declaration.getNameAsString() + '\n');
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        //System.out.println(" " + declaration.getDeclarationAsString(true, true));
+    }
+
+    private boolean methodIsGetter(String methodName){
+        for( String value : fieldsList){
+            if(methodName.compareTo("get"+value) == 0){
+                try {
+                    file.write("Attribute : " + value + '\n');
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -73,8 +96,8 @@ public class PrivateElementsGetter extends VoidVisitorWithDefaults<Void> {
         if(!declaration.isPrivate()){
             return ;
         }
-        String field = declaration.getVariable(0).toString().substring(0, 1).toUpperCase() + declaration.getVariable(0).toString().substring(1);
-        // System.out.println(" " + field);
-        fieldsList.add(field);
+        String attributeName = declaration.getVariable(0).toString().split(" ")[0];
+        String attributeNameFirstLetterUpper = attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1);
+        fieldsList.add(attributeNameFirstLetterUpper);
     }
 }

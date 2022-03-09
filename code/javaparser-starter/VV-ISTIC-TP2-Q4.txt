@@ -1,0 +1,3 @@
+Package and Class : impl.Afficheur
+Attribute : Memory
+Getter : getMemory
