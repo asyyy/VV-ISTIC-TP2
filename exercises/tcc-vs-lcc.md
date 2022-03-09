@@ -28,6 +28,8 @@ class SingleValue {
 ```
 Here TCC and LCC = 3/3 = 1
 
+NP = Maximum number of possible connection
+
 NDC = number of direct connections (number of edges in the connection graph)
 
 NID = number of indirect connections
